@@ -12,6 +12,6 @@ namespace TicketMaster
         public string Lab { get; set; }
         public string Error { get; set; }
         public string Scenario { get; set; }
-        public List<Attachment> Attachment { get; set; }
+        public List<string> AttachmentPath { get; set; } = new List<string>();
     }
 }

@@ -2,6 +2,8 @@ using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -10,13 +12,15 @@ namespace TicketMaster.Dialogs
     public class MainDialog : ComponentDialog
     {
         private readonly TicketRecognizer _luisRecognizer;
+        private readonly MailSender _mailSender;
         protected readonly ILogger Logger;
 
         // Dependency injection uses this constructor to instantiate MainDialog
-        public MainDialog(TicketRecognizer luisRecognizer, CreateTicketDialog ticketDialog, ILogger<MainDialog> logger)
+        public MainDialog(TicketRecognizer luisRecognizer, CreateTicketDialog ticketDialog, MailSender mailSender, ILogger<MainDialog> logger)
             : base(nameof(MainDialog))
         {
             _luisRecognizer = luisRecognizer;
+            _mailSender = mailSender;
             Logger = logger;
 
             AddDialog(new TextPrompt(nameof(TextPrompt)));
@@ -56,15 +60,38 @@ namespace TicketMaster.Dialogs
         {
             // If the child dialog ("CreateTicketDialog") was cancelled, the user failed to confirm
             // the Result here will be null.
-            if (stepContext.Result is TicketDetails result)
+            var ticketDetails = (TicketDetails)stepContext.Result;
+
+            if (ticketDetails != null)
             {
                 // Now we have all the ticket details call the email to ticket master.
                 var messageText = $"Creating a ticket";
                 var message = MessageFactory.Text(messageText, messageText, InputHints.IgnoringInput);
                 await stepContext.Context.SendActivityAsync(message, cancellationToken);
+
+                //send an email
+                var mailArgs = GetMailArguments(ticketDetails);
+                _mailSender.SendEmail(mailArgs);
             }
 
             return await stepContext.Parent.CancelAllDialogsAsync(cancellationToken);
+        }
+
+        private MailArguments GetMailArguments(TicketDetails ticketDetails)
+        {
+            var mailArguments = new MailArguments();
+            mailArguments.Subject = ticketDetails.Title;
+            mailArguments.Message += $"Target version:{Environment.NewLine}{ticketDetails.Branch}{Environment.NewLine}";
+            mailArguments.Message += $"Link to execution:{Environment.NewLine}{ticketDetails.LinkToExecution}{Environment.NewLine}";
+            mailArguments.Message += $"Description version:{Environment.NewLine}{ticketDetails.Description}";
+
+            var mailAttachments = new List<System.Net.Mail.Attachment>() { };
+            foreach (var filePath in ticketDetails.AttachmentPath)
+            {
+                mailAttachments.Add(new System.Net.Mail.Attachment(filePath));
+            }
+
+            return mailArguments;
         }
     }
 }

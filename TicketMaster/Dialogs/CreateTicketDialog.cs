@@ -157,8 +157,8 @@ namespace TicketMaster.Dialogs
 
         private async Task<DialogTurnResult> ProcessAttachmentStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
+            var ticketDetails = (TicketDetails)stepContext.Options;
             List<Attachment> attachments = (List<Attachment>)stepContext.Result;
-            string attachmentStepMsgText = string.Empty;
 
             foreach (var file in attachments)
             {
@@ -174,13 +174,12 @@ namespace TicketMaster.Dialogs
                     webClient.DownloadFile(remoteFileUrl, localFileName);
                 }
 
-                attachmentStepMsgText = $"Attachment '{file.Name}' has been received.";
+                ticketDetails.AttachmentPath.Add(localFileName);
+
+                var attachmentStepMsgText = $"Attachment '{file.Name}' has been received.";
                 var message = MessageFactory.Text(attachmentStepMsgText, attachmentStepMsgText, InputHints.IgnoringInput);
                 await stepContext.Context.SendActivityAsync(message, cancellationToken);
             }
-
-            var ticketDetails = (TicketDetails)stepContext.Options;
-            ticketDetails.Attachment = attachments;
 
             return await stepContext.NextAsync(null, cancellationToken);
         }
