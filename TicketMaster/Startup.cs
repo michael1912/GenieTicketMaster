@@ -37,6 +37,9 @@ namespace TicketMaster
             // Register LUIS recognizer
             services.AddSingleton<TicketRecognizer>();
 
+            // Register the MailSender.
+            services.AddSingleton<MailSender>();
+
             // Register the TicketDialog.
             services.AddSingleton<CreateTicketDialog>();
 
