@@ -27,17 +27,19 @@ namespace TicketMaster.Dialogs
                 ProcessLabStepAsync,
                 BranchStepAsync,
                 ProcessBranchStepAsync,
-                ScenarioStepAsync,
-                ProcessScenarioStepAsync,
+                //ScenarioStepAsync,
+                //ProcessScenarioStepAsync,
                 ErrorStepAsync,
                 ProcessErrorStepAsync,
                 LinkToExecutionStepAsync,
                 ProcessLinkToExecutionStepAsync,
-                DescriptionStepAsync,
-                ProcessDescriptionStepAsync,
+                ConfirmAttachmentStepAsync,
                 UploadAttachmentStepAsync,
                 ProcessAttachmentStepAsync,
-                ConfirmStepAsync,
+                ConfirmDescriptionStepAsync,
+                DescriptionStepAsync,
+                ProcessDescriptionStepAsync,
+                ConfirmAllInputsStepAsync,
                 FinalStepAsync,
             }));
 
@@ -61,7 +63,6 @@ namespace TicketMaster.Dialogs
         }
         private async Task<DialogTurnResult> LabStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-
             var labStepMsgText = "Ok, got you. I need some more information to investigate this case. Let’s start with the environment. In what lab did it happen? Or, maybe it is a docker issue ? ";
             var promptMessage = MessageFactory.Text(labStepMsgText, labStepMsgText, InputHints.ExpectingInput);
             return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = promptMessage }, cancellationToken);
@@ -69,14 +70,13 @@ namespace TicketMaster.Dialogs
 
         private async Task<DialogTurnResult> ProcessLabStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-            var labDetails = (TicketDetails)stepContext.Options;
-            labDetails.Lab = (string)stepContext.Result;
+            var ticketDetails = (TicketDetails)stepContext.Options;
+            ticketDetails.Lab = (string)stepContext.Result;
             return await stepContext.NextAsync(null, cancellationToken);
         }
 
         private async Task<DialogTurnResult> LinkToExecutionStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-
             var labStepMsgText = "So that's how it was! Let me now go into a little more detail. Could you please provide a link to the CI report or to build definition execution?";
             var promptMessage = MessageFactory.Text(labStepMsgText, labStepMsgText, InputHints.ExpectingInput);
             return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = promptMessage }, cancellationToken);
@@ -84,16 +84,29 @@ namespace TicketMaster.Dialogs
 
         private async Task<DialogTurnResult> ProcessLinkToExecutionStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-            var labDetails = (TicketDetails)stepContext.Options;
-            labDetails.LinkToExecution = (string)stepContext.Result;
+            var ticketDetails = (TicketDetails)stepContext.Options;
+            ticketDetails.LinkToExecution = (string)stepContext.Result;
             return await stepContext.NextAsync(null, cancellationToken);
+        }
+
+        private async Task<DialogTurnResult> ConfirmDescriptionStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        {
+            var descriptionStepMsgText = "Any additional information you want to provide?";
+            var promptMessage = MessageFactory.Text(descriptionStepMsgText, descriptionStepMsgText, InputHints.ExpectingInput);
+
+            return await stepContext.PromptAsync(nameof(ConfirmPrompt), new PromptOptions { Prompt = promptMessage }, cancellationToken);
         }
 
         private async Task<DialogTurnResult> DescriptionStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-            var descriptionStepMsgText = "Any additional information you want to provide?";
-            var promptMessage = MessageFactory.Text(descriptionStepMsgText, descriptionStepMsgText, InputHints.ExpectingInput);
-            return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = promptMessage }, cancellationToken);
+            if ((bool)stepContext.Result)
+            {
+                var descriptionStepMsgText = $"Please provide additiona details";
+                var promptMessage = MessageFactory.Text(descriptionStepMsgText, descriptionStepMsgText, InputHints.ExpectingInput);
+                return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = promptMessage }, cancellationToken);
+            }
+
+            return await stepContext.NextAsync(null, cancellationToken);
         }
 
         private async Task<DialogTurnResult> ProcessDescriptionStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
@@ -133,32 +146,50 @@ namespace TicketMaster.Dialogs
             return await stepContext.NextAsync(null, cancellationToken);
         }
 
-        private async Task<DialogTurnResult> ScenarioStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
-        {
-            var branchStepMsgText = "Great, now i am all set with envirement. And what scenario or build definition did you run?";
-            var promptMessage = MessageFactory.Text(branchStepMsgText, branchStepMsgText, InputHints.ExpectingInput);
-            return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = promptMessage }, cancellationToken);
-        }
+        //private async Task<DialogTurnResult> ScenarioStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        //{
+        //    var branchStepMsgText = "Great, now i am all set with envirement. And what scenario or build definition did you run?";
+        //    var promptMessage = MessageFactory.Text(branchStepMsgText, branchStepMsgText, InputHints.ExpectingInput);
+        //    return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = promptMessage }, cancellationToken);
+        //}
 
-        private async Task<DialogTurnResult> ProcessScenarioStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        //private async Task<DialogTurnResult> ProcessScenarioStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        //{
+        //    var ticketDetails = (TicketDetails)stepContext.Options;
+        //    ticketDetails.Scenario = (string)stepContext.Result;
+        //    return await stepContext.NextAsync(null, cancellationToken);
+        //}
+
+        private async Task<DialogTurnResult> ConfirmAttachmentStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             var ticketDetails = (TicketDetails)stepContext.Options;
-            ticketDetails.Scenario = (string)stepContext.Result;
-            return await stepContext.NextAsync(null, cancellationToken);
-        }
 
+            var messageText = $"Do you have attachments to upload?";
+            var promptMessage = MessageFactory.Text(messageText, messageText, InputHints.ExpectingInput);
+
+            return await stepContext.PromptAsync(nameof(ConfirmPrompt), new PromptOptions { Prompt = promptMessage }, cancellationToken);
+        }
 
         private static async Task<DialogTurnResult> UploadAttachmentStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-            var attachmentStepMsgText = $"We're almost done! In addition, please attach relevant screenshots or logs. Fill free to attach a funny picture if don’t have any important documents)";
-            var promptMessage = MessageFactory.Text(attachmentStepMsgText, attachmentStepMsgText, InputHints.ExpectingInput);
-            return await stepContext.PromptAsync(nameof(AttachmentPrompt), new PromptOptions { Prompt = promptMessage }, cancellationToken);
+            if ((bool)stepContext.Result)
+            {
+                var attachmentStepMsgText = $"Please attach relevant screenshots or logs. Fill free to attach a funny picture if don’t have any important documents)";
+                var promptMessage = MessageFactory.Text(attachmentStepMsgText, attachmentStepMsgText, InputHints.ExpectingInput);
+                return await stepContext.PromptAsync(nameof(AttachmentPrompt), new PromptOptions { Prompt = promptMessage }, cancellationToken);
+            }
+
+            return await stepContext.NextAsync(null, cancellationToken);
         }
 
         private async Task<DialogTurnResult> ProcessAttachmentStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             var ticketDetails = (TicketDetails)stepContext.Options;
             List<Attachment> attachments = (List<Attachment>)stepContext.Result;
+            if (attachments == null) 
+            {
+                return await stepContext.NextAsync(null, cancellationToken);
+            }
 
             foreach (var file in attachments)
             {
@@ -184,13 +215,13 @@ namespace TicketMaster.Dialogs
             return await stepContext.NextAsync(null, cancellationToken);
         }
 
-        private async Task<DialogTurnResult> ConfirmStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        private async Task<DialogTurnResult> ConfirmAllInputsStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             var ticketDetails = (TicketDetails)stepContext.Options;
 
             var messageText = $"So, let’s review.{Environment.NewLine}" +
                 $"You faced up with \"{ticketDetails.Title}\" on {ticketDetails.Lab}, {ticketDetails.Branch}{Environment.NewLine}" +
-                $"Scenario \"{ticketDetails.Scenario}\" failed on \"{ticketDetails.Error}\"{Environment.NewLine}" +
+                $"Error is \"{ticketDetails.Error}\"{Environment.NewLine}" +
                 $"Now we are about to open a ticket.{Environment.NewLine}" +
                 $"Click YES if all suits fine, take a breath, and click NO if something is wrong and you want to start from scratch";
 

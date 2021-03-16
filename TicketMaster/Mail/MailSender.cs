@@ -16,7 +16,9 @@ public class MailSender
     {
         mailArgs.SmtpHost = "smtp.gmail.com";
         mailArgs.Port = 587;
-        mailArgs.MailTo = "mip@ciklum.com";
+        mailArgs.MailTo = "emal";
+        mailArgs.MailFrom = "your email";
+        mailArgs.Password = "your password";
 
         MailMessage message = new MailMessage(mailArgs.MailFrom, mailArgs.MailTo);
         message.Subject = mailArgs.Subject;
@@ -28,8 +30,8 @@ public class MailSender
 
         SmtpClient client = new SmtpClient(mailArgs.SmtpHost);
         // Credentials are necessary if the server requires the client
-        // to authenticate before it will send email on the client's behalf.
-        //client.UseDefaultCredentials = true;
+        // it will send email on the client's behalf.
+        // client.UseDefaultCredentials = true;
         client.UseDefaultCredentials = false;
         var networkCredential = new NetworkCredential
         {
