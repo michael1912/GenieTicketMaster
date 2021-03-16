@@ -41,7 +41,7 @@ namespace TicketMaster.Dialogs
             }
 
             await stepContext.Context.SendActivityAsync(
-               MessageFactory.Text($"I'm a Genie Bot and I will guide you through the ticket creation process.", inputHint: InputHints.IgnoringInput), cancellationToken);
+               MessageFactory.Text($" I am Genie Intelligent Assistant and you may call me Gia :)I am here to help you with opening a new ticket for Framework Team.", inputHint: InputHints.IgnoringInput), cancellationToken);
 
             return await stepContext.NextAsync(null, cancellationToken);
         }

@@ -9,6 +9,9 @@ namespace TicketMaster
         public string Description { get; set; }
         public string Branch { get; set; }
         public string LinkToExecution { get; set; }
+        public string Lab { get; set; }
+        public string Error { get; set; }
+        public string Scenario { get; set; }
         public List<Attachment> Attachment { get; set; }
     }
 }
