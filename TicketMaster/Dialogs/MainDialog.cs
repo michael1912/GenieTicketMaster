@@ -65,13 +65,17 @@ namespace TicketMaster.Dialogs
             if (ticketDetails != null)
             {
                 // Now we have all the ticket details call the email to ticket master.
-                var messageText = $"Creating a ticket";
+                var messageText = $"Sending a ticket";
                 var message = MessageFactory.Text(messageText, messageText, InputHints.IgnoringInput);
                 await stepContext.Context.SendActivityAsync(message, cancellationToken);
 
                 //send an email
                 var mailArgs = GetMailArguments(ticketDetails);
                 _mailSender.SendEmail(mailArgs);
+
+                messageText = $"Ticket was send";
+                message = MessageFactory.Text(messageText, messageText, InputHints.IgnoringInput);
+                await stepContext.Context.SendActivityAsync(message, cancellationToken);
             }
 
             return await stepContext.Parent.CancelAllDialogsAsync(cancellationToken);
@@ -90,6 +94,7 @@ namespace TicketMaster.Dialogs
             {
                 mailAttachments.Add(new System.Net.Mail.Attachment(filePath));
             }
+            mailArguments.Attachments = mailAttachments;
 
             return mailArguments;
         }

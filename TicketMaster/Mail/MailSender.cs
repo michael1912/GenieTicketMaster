@@ -48,6 +48,7 @@ public class MailSender
         catch (Exception ex)
         {
             Logger.LogError("Exception caught in CreateMessage(): {0}", ex.ToString());
+            throw;
         }
     }
 }
