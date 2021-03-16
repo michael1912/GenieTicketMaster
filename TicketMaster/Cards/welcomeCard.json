@@ -1,0 +1,28 @@
+{
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "type": "AdaptiveCard",
+  "version": "1.0",
+  "body": [
+    {
+      "type": "Image",
+      "url": "https://sdl-stickershop.line.naver.jp/products/0/0/1/6761/android/stickers/11950488.png;compress=true",
+      "size": "stretch"
+    },
+    {
+      "type": "TextBlock",
+      "spacing": "medium",
+      "size": "default",
+      "weight": "bolder",
+      "text": "Hello, [userName]! Welcome to Genie Ticket Master!",
+      "wrap": true,
+      "maxLines": 0
+    }
+  ],
+  "actions": [
+    {
+      "type": "Action.OpenUrl",
+      "title": "Get an overview",
+      "url": "https://docs.microsoft.com/en-us/azure/bot-service/?view=azure-bot-service-4.0"
+    }
+  ]
+}
